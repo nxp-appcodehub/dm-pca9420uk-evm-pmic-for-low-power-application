@@ -1,0 +1,31 @@
+NXP Software Content Register
+
+Name: dm-pca9420uk-evm-pmic-for-low-power-application
+Version: 1.0
+Outgoing License: BSD-3-Clause
+License File: LICENSE.txt
+Description: This example provides CMSIS Compliant APIs to configure PCA9420UK-EVM pmic board for FRDM-MCXN947 and FRDM-MCXA153.
+Release location: https://github.com/nxp-appcodehub/dm-pca9420uk-evm-pmic-for-low-power-application
+Origin: NXP (BSD-3-Clause)
+        CMSIS (Apache-2.0) - https://github.com/ARM-software/CMSIS_5/releases/tag/5.4.0
+
+cmsis                      Name: CMSIS                                       
+                           Version: 5.4.0                                    
+                           License File: frdmmcxa153_pca9420uk-evm/CMSIS/LICENSE.txt
+                    			 frdmmcxn947_pca9420uk-evm/CMSIS/LICENSE.txt
+			   Format: source code                               
+                           Description and comments: Vendor-independent hardware          
+                           abstraction layer for microcontrollers that are
+                           based on Arm Cortex processors, distributed by ARM. cores
+                           Release Location:https://github.com/ARM-software/CMSIS_5/releases/tag/5.4.0
+                           Origin: ARM (Apache-2.0) - https://github.com/ARM-software/CMSIS_5/
+
+SDK_Components             Name: SDK components and board peripheral drivers 
+                           Version: NA                                       
+                           Outgoing License: BSD-3-Clause                    
+                           License File: LICENSE                       
+                           Format: source code                               
+                           Description: SDK components and board peripheral  
+                           drivers, for example, uart and serial manager etc    
+                           Release Location:http://mcuxpresso.nxp.com/
+			   Origin: NXP (BSD-3-Clause)

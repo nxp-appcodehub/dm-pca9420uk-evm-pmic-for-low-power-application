@@ -1,0 +1,28 @@
+<data:item xmlns:data="data" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="data ../../xsd/alp.xsd" type="demo" format="cmsis" versionSchema="1.0.0" name="pca9420uk-evm pmic for low power application" uuid="817c884d-10c5-4988-b7bb-ceed66049dbe">
+    <display_title>
+        PMIC for Low Power Applications on FRDM-MCXN947 and MCXA153
+    </display_title>
+    <overview>
+        <![CDATA[The PCA9420 is a highly integrated Power Management IC (PMIC), targeted to provide a full power management solution for low-power microcontroller applications or other similar applications. The device consists of a linear battery charger capable of charging up to 315 mA current. It has an I²C programmable Constant Current (CC) and Constant Voltage (CV) values for flexible configuration.]]>
+    </overview>
+    <toolchains>
+        <toolchain name="mcux"></toolchain>
+    </toolchains>
+    <families>
+        <family name="mcx"></family>
+    </families>
+    <nxp_compatible_hw>
+        <hw id="FRDM-MCXA153"></hw>
+        <hw id="FRDM-MCXN947"></hw>
+    </nxp_compatible_hw>
+    <nxp_ebh_hw>
+        <ebh id="nxp_pca9420uk_evm"></ebh>
+        <ebh id="nxp_pca9421uk_evm"></ebh>
+    </nxp_ebh_hw>
+    <peripherals>
+        <peripheral name="i2c"></peripheral>
+    </peripherals>
+    <categories>
+        <category name="low_power"></category>
+    </categories>
+</data:item>
