@@ -105,6 +105,14 @@ This demo application provides a command line interface which allows the user to
 - Install MCXUpresso SDK 2.14.x for FRDM-MCX947, FRDM-MCXA153 (drag and drop SDK zip into "Installed SDK" view) into MCUXpresso IDE.
 - Go to "Quickstart Panel" and click on "Import Project(s) from file system",
 - Select "Project directory (unpacked)" and browse to the cloned project folder.
+- **To build demo application for PCA9421UK-EVM, Enable PCA9421UK_EVM_EN flag in frdm_pca9420uk_shield.h file under board directory.**
+
+      PCA9421UK_EVM_EN = 1, for PCA9421UK-EVM shield board 
+      PCA9421UK_EVM_EN = 0, for PCA9420UK-EVM shield board
+
+     [<img src="./images/PCA9421_enable.PNG" width="300"/>](PCA9421_enable.PNG)
+
+
 - Right click on project and select build to start building the project.
 
 Note: By default I2C Controller operates in interrupt mode, to switch into EDMA mode Change:
@@ -297,5 +305,5 @@ Questions regarding the content/correctness of this example can be entered as Is
 ## 7. Release Notes<a name="step7"></a>
 | Version | Description / Update                           | Date                        |
 |:-------:|------------------------------------------------|----------------------------:|
-| 1.0     | Initial release on Application Code Hub        | November 28<sup>th</sup> 2024 |
+| 1.0     | Initial release on Application Code Hub        | December 17<sup>th</sup> 2024 |
 

@@ -51,7 +51,7 @@ int32_t PCA9420_DRV_Read(pca9420_i2c_sensorhandle_t *pSensorHandle, uint8_t RegA
 	int32_t status;
 	uint8_t reg;
 
-	status = Register_I2C_Read(pSensorHandle->pCommDrv, &pSensorHandle->deviceInfo, pSensorHandle->slaveAddress, RegAddress, PCA9420UK_REG_SIZE_BYTES, Data);
+	status = Register_I2C_Read(pSensorHandle->pCommDrv, &pSensorHandle->deviceInfo, pSensorHandle->slaveAddress, RegAddress, PCA9420UK_REG_SIZE_BYTES, (uint8_t*) Data);
 
 	if (ARM_DRIVER_OK != status)
 	{
@@ -1352,6 +1352,7 @@ int32_t PCA9420_enable_disable_vol_reg_int(pca9420_i2c_sensorhandle_t *pSensorHa
 	return SENSOR_ERROR_NONE;
 }
 
+#if (!PCA9421UK_EVM_EN)
 //Enable/disable charging in case of watchdog expire
 int32_t PCA9420_chrg_conf_wtchdg(pca9420_i2c_sensorhandle_t *pSensorHandle, uint8_t operation)
 {
@@ -2233,3 +2234,4 @@ int32_t PCA9420_Get_thrml_reg_thshld(pca9420_i2c_sensorhandle_t *pSensorHandle, 
 	}
 	return SENSOR_ERROR_NONE;
 }
+#endif

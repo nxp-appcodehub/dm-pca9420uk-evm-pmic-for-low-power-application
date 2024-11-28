@@ -18,7 +18,7 @@
 **         contains the system frequency. It configures the device and initializes
 **         the oscillator (PLL) that is part of the microcontroller device.
 **
-**     Copyright 2016, 2024 Freescale Semiconductor, Inc.
+**     Copyright 2016 Freescale Semiconductor, Inc.
 **     Copyright 2016-2024 NXP
 **     SPDX-License-Identifier: BSD-3-Clause
 **

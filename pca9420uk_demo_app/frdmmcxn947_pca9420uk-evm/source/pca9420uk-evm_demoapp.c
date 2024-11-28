@@ -5,8 +5,8 @@
  */
 
 /**
- * @file p3t1085uk_interrupt.c
- * @brief The p3t1085uk_interrupt.c file implements the ISSDK P3T1085UK sensor
+ * @file pca9420uk-evm_demoapp.c
+ * @brief The pca9420uk-evm_demoapp.c file implements the ISSDK PCA9420 PMIC
  *        driver example demonstration with interrupt mode.
  */
 
@@ -91,7 +91,7 @@ void PCA9420_INT1_ISR(void)
 
 /*! -----------------------------------------------------------------------
  *  @brief       Initialize PCA9420UK Interrupt Pin and Enable IRQ
- *  @details     This function initializes P3T1085UK interrupt pin
+ *  @details     This function initializes PCA9420UK interrupt pin
  *  @return      void  There is no return value.
  *  -----------------------------------------------------------------------*/
 void init_pca9420_wakeup_int(void)
@@ -105,14 +105,6 @@ void init_pca9420_wakeup_int(void)
 // Functions
 //-----------------------------------------------------------------------
 
-/*!@brief        Get Device ID.
- *  @details     Read the SJA1124EVB device ID.
- *  @param[in]   None.
- *  @constraints None
- *
- *  @reentrant   No
- *  @return      No
- */
 bool isMultipleof5 (int n)
 {
 	while ( n > 0 )
@@ -254,14 +246,6 @@ static void get_device_id()
 	PRINTF("\r\n********************************\r\n");
 }
 
-/*!@brief        Get Regulator Status.
- *  @details     Get status of PLL input frequency status, over-temperature warning and PLL lock status.
- *  @param[in]   None.
- *  @constraints None
- *
- *  @reentrant   No
- *  @return      No
- */
 static void get_regulator_status()
 {
 	uint16_t character, data;
@@ -306,15 +290,28 @@ static void top_level_interrupt_status()
 	{
 		if((data & PCA9420_SYS_INT_MASK) >> PCA9420_SYS_INT_SHIFT)
 			PRINTF("\r\n\033[31m System level interrupt occurred!!! \033[37m\r\n");
+
+#if (!PCA9421UK_EVM_EN) //PCA9420UK-EVM
 		if((data & PCA9420_BAT_INT_MASK) >> PCA9420_BAT_INT_SHIFT)
 			PRINTF("\r\n\033[31m Linear battery charger interrupt occurred!!! \033[37m\r\n");
+#else //PCA9421UK-EVM
+		if((data & PCA9421_VIN_INT_MASK) >> PCA9421_VIN_INT_SHIFT)
+			PRINTF("\r\n\033[31m VIN interrupt occurred!!! \033[37m\r\n");
+#endif
+
 		if(((data & PCA9420_BUCK_INT_MASK) >> PCA9420_BUCK_INT_SHIFT) || ((data & PCA9420_LDO_INT_MASK) >> PCA9420_LDO_INT_SHIFT))
 			PRINTF("\r\n\033[31m Voltage regulator interrupt occurred!!! \033[37m");
 
 		do{
 			PRINTF("\r\n\r\n\033[93m *****Select any one to check particular Interrupt status***** \033[37m\r\n");
 			PRINTF("\r\n1. System Level Interrupt \r\n");
+
+#if (!PCA9421UK_EVM_EN) //PCA9420UK-EVM
 			PRINTF("\r\n2. Linear Battery Charger Interrupt \r\n");
+#else //PCA9421UK-EVM
+			PRINTF("\r\n2. VIN Interrupt \r\n");
+#endif
+
 			PRINTF("\r\n3. Voltage Regulator Interrupt\r\n");
 			PRINTF("\r\n4. Exit\r\n");
 			PRINTF("\r\n********************************\r\n");
@@ -354,6 +351,7 @@ static void top_level_interrupt_status()
 				}
 				break;
 			case 2: //Charger block interrupt
+#if (!PCA9421UK_EVM_EN)
 				if((data & PCA9420_BAT_INT_MASK) >> PCA9420_BAT_INT_SHIFT)
 				{
 					PCA9420_DRV_Read(&pca9420Driver, PCA9420UK_SUB_INT1, &data );
@@ -376,6 +374,18 @@ static void top_level_interrupt_status()
 				{
 					PRINTF("\r\n\033[32m No charger block interrupt occurred \033[37m\r\n");
 				}
+#else //PCA9421UK-EVM
+				if((data & PCA9421_VIN_INT_MASK) >> PCA9421_VIN_INT_SHIFT)
+				{
+					PCA9420_DRV_Read(&pca9420Driver, PCA9420UK_SUB_INT1, &data );
+					if((data & PCA9420_VIN_ILIM_MASK) >> PCA9420_VIN_ILIM_SHIFT)
+						PRINTF("\r\n\033[31m Input current limit interrupt occurred. \033[37m\r\n");
+				}
+				else
+				{
+					PRINTF("\r\n\033[32m No charger block interrupt occurred \033[37m\r\n");
+				}
+#endif
 				break;
 			case 3: //Voltage regulator interrupt
 				if(((data & PCA9420_BUCK_INT_MASK) >> PCA9420_BUCK_INT_SHIFT) || ((data & PCA9420_LDO_INT_MASK) >> PCA9420_LDO_INT_SHIFT))
@@ -434,7 +444,11 @@ static void device_settings()
 		PRINTF("\r\n9. Mode Selection\r\n");
 		PRINTF("\r\n10. Long Glitch Timer on ON Key\r\n");
 		PRINTF("\r\n11. Reset Watchdog Timer\r\n");
+#if (!PCA9421UK_EVM_EN)
 		PRINTF("\r\n12. Reset PCA9420UK-EVM\r\n");
+#else
+		PRINTF("\r\n12. Reset PCA9421UK-EVM\r\n");
+#endif
 		PRINTF("\r\n13. Exit from Device Configuration Setting\r\n");
 		PRINTF("\r\n********************************\r\n");
 
@@ -586,9 +600,20 @@ static void device_settings()
 		case 3: //ASYS input source selection
 		{
 			PRINTF("\r\nSelect ASYS input source selection------\r\n");
-			PRINTF("\r\n1. Powered by either VBAT or VIN (whichever is greater)\r\n");
-			PRINTF("\r\n2. Powered by VBAT \r\n");
-			PRINTF("\r\n3. Powered by VIN\r\n");
+
+#if (!PCA9421UK_EVM_EN) //PCA9420UK-EVM
+			{
+				PRINTF("\r\n1. Powered by either VBAT or VIN (whichever is greater)\r\n");
+				PRINTF("\r\n2. Powered by VBAT \r\n");
+				PRINTF("\r\n3. Powered by VIN\r\n");
+			}
+#else //PCA9421UK-EVM
+			{
+				PRINTF("\r\n1. Powered by either VIN or VIN_AUX (whichever is greater)\r\n");
+				PRINTF("\r\n2. Powered by VIN_AUX \r\n");
+				PRINTF("\r\n3. Powered by VIN\r\n");
+			}
+#endif
 
 			do
 			{
@@ -847,39 +872,39 @@ static void device_settings()
 			switch(pBuffer)
 			{
 			case kPCA9420_ThemShdn95C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 95°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 95 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn100C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 100°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 100 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn105C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 105°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 105 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn110C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 110°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 110 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn115C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 115°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 115 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn120C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 120°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 120 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn125C:
-				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 125°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently thermal shutdown threshold is 125 C. \033[37m\r\n");
 				break;
 
 			default:
 				PRINTF("Error in thermal shutdown threshold!!!\r\n");
 			}
 
-			PRINTF("\r\nSelect thermal shutdown threshold (hysteresis with 20°C)------\r\n");
-			PRINTF("\r\n1. 95°C\r\n");
-			PRINTF("\r\n2. 100°C\r\n");
-			PRINTF("\r\n3. 105°C\r\n");
-			PRINTF("\r\n4. 110°C\r\n");
-			PRINTF("\r\n5. 115°C\r\n");
-			PRINTF("\r\n6. 120°C\r\n");
-			PRINTF("\r\n7. 125°C\r\n");
+			PRINTF("\r\nSelect thermal shutdown threshold (hysteresis with 20 C)------\r\n");
+			PRINTF("\r\n1. 95 C\r\n");
+			PRINTF("\r\n2. 100 C\r\n");
+			PRINTF("\r\n3. 105 C\r\n");
+			PRINTF("\r\n4. 110 C\r\n");
+			PRINTF("\r\n5. 115 C\r\n");
+			PRINTF("\r\n6. 120 C\r\n");
+			PRINTF("\r\n7. 125 C\r\n");
 
 			do
 			{
@@ -926,25 +951,25 @@ static void device_settings()
 			switch(pBuffer)
 			{
 			case kPCA9420_ThemShdn95C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 95°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 95 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn100C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 100°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 100 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn105C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 105°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 105 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn110C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 110°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 110 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn115C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 115°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 115 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn120C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 120°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 120 C. \033[37m\r\n");
 				break;
 			case kPCA9420_ThemShdn125C:
-				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 125°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Thermal shutdown threshold is set to 125 C. \033[37m\r\n");
 				break;
 			default:
 				PRINTF("Error in thermal shutdown threshold!!!\r\n");
@@ -959,26 +984,26 @@ static void device_settings()
 			switch(pBuffer)
 			{
 			case kPCA9420_DieTempWarn75C:
-				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 75°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 75 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn80C:
-				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 80°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 80 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn85C:
-				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 85°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 85 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn90C:
-				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 90°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Currently Die temperature warning threshold is 90 C. \033[37m\r\n");
 				break;
 			default:
 				PRINTF("Error in getting Die temperature warning threshold!!!\r\n");
 			}
 
 			PRINTF("\r\nSelect Die temperature warning threshold------\r\n");
-			PRINTF("\r\n1. 75°C\r\n");
-			PRINTF("\r\n2. 80°C\r\n");
-			PRINTF("\r\n3. 85°C\r\n");
-			PRINTF("\r\n4. 90°C\r\n");
+			PRINTF("\r\n1. 75 C\r\n");
+			PRINTF("\r\n2. 80 C\r\n");
+			PRINTF("\r\n3. 85 C\r\n");
+			PRINTF("\r\n4. 90 C\r\n");
 
 			do
 			{
@@ -1015,16 +1040,16 @@ static void device_settings()
 			switch(pBuffer)
 			{
 			case kPCA9420_DieTempWarn75C:
-				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 75°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 75 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn80C:
-				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 80°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 80 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn85C:
-				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 85°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 85 C. \033[37m\r\n");
 				break;
 			case kPCA9420_DieTempWarn90C:
-				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 90°C. \033[37m\r\n");
+				PRINTF("\r\n\033[93m Die temperature warning threshold is set to 90 C. \033[37m\r\n");
 				break;
 			default:
 				PRINTF("Error in getting Die temperature warning threshold!!!\r\n");
@@ -1203,7 +1228,12 @@ static void device_settings()
 			PCA9420_SW_reset(&pca9420Driver);
 			PRINTF("\r\n********************************\r\n");
 			PRINTF("\r\n\033[93m Device reset is done successfully. \033[37m \r\n\r\n");
+#if (!PCA9421UK_EVM_EN)
 			PRINTF("\r\n\033[32m PCA9420UK-EVM initialized with default configurations. \033[37m \r\n");
+#else
+			PRINTF("\r\n\033[32m PCA9421UK-EVM initialized with default configurations. \033[37m \r\n");
+#endif
+
 			PRINTF("\r\n********************************\r\n");
 			break;
 		case 13: //Exit from device configuration setting
@@ -1216,6 +1246,7 @@ static void device_settings()
 	}
 }
 
+#if !(PCA9421UK_EVM_EN)
 static void charging_control()
 {
 	uint16_t character, offset;
@@ -1719,10 +1750,10 @@ static void charging_control()
 			switch (pBuffer)
 			{
 			case kPCA9420_NTC_RES_SEL_100:
-				PRINTF("\r\nCurrently thermistor resistance(thermistor bias current) is 100 kΩ (Current = 5 μA).\r\n");
+				PRINTF("\r\nCurrently thermistor resistance(thermistor bias current) is 100 kO (Current = 5  A).\r\n");
 				break;
 			case kPCA9420_NTC_RES_SEL_10:
-				PRINTF("\r\nCurrently thermistor resistance(thermistor bias current) is 10 kΩ (Current = 50 μA).\r\n");
+				PRINTF("\r\nCurrently thermistor resistance(thermistor bias current) is 10 kO (Current = 50  A).\r\n");
 				break;
 			default:
 				PRINTF("\r\nInvalid option selected\r\n");
@@ -1730,8 +1761,8 @@ static void charging_control()
 			}
 
 			PRINTF("\r\nSelect Thermistor resistance (NTC thermistor bias current)------\r\n");
-			PRINTF("\r\n1. 100 kΩ (Current = 5 μA)\r\n");
-			PRINTF("\r\n2. 10 kΩ (Current = 50 μA)\r\n");
+			PRINTF("\r\n1. 100 kO (Current = 5  A)\r\n");
+			PRINTF("\r\n2. 10 kO (Current = 50  A)\r\n");
 
 			do
 			{
@@ -1765,10 +1796,10 @@ static void charging_control()
 			switch (pBuffer)
 			{
 			case kPCA9420_NTC_RES_SEL_100:
-				PRINTF("\r\nThermistor resistance(thermistor bias current) is set to 100 kΩ (Current = 5 μA).\r\n");
+				PRINTF("\r\nThermistor resistance(thermistor bias current) is set to 100 kO (Current = 5  A).\r\n");
 				break;
 			case kPCA9420_NTC_RES_SEL_10:
-				PRINTF("\r\nThermistor resistance(thermistor bias current) is set to 10 kΩ (Current = 50 μA).\r\n");
+				PRINTF("\r\nThermistor resistance(thermistor bias current) is set to 10 kO (Current = 50  A).\r\n");
 				break;
 			default:
 				PRINTF("\r\nInvalid option selected\r\n");
@@ -1907,42 +1938,42 @@ static void charging_control()
 			switch(pBuffer)
 			{
 			case kPCA9420_THM_REG_80:
-				PRINTF("\r\nCurrently thermal regulation threshold is 80 °C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 80  C.\r\n");
 				break;
 			case kPCA9420_THM_REG_85:
-				PRINTF("\r\nCurrently thermal regulation threshold is 85°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 85 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_90:
-				PRINTF("\r\nCurrently thermal regulation threshold is 90°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 90 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_95:
-				PRINTF("\r\nCurrently thermal regulation threshold is 95°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 95 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_100:
-				PRINTF("\r\nCurrently thermal regulation threshold is 100°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 100 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_105:
-				PRINTF("\r\nCurrently thermal regulation threshold is 105°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 105 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_110:
-				PRINTF("\r\nCurrently thermal regulation threshold is 110°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 110 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_115:
-				PRINTF("\r\nCurrently thermal regulation threshold is 115°C.\r\n");
+				PRINTF("\r\nCurrently thermal regulation threshold is 115 C.\r\n");
 				break;
 			default:
 				PRINTF("\r\nError in getting thermal regulation threshold value!!!\r\n");
 			}
 
 			PRINTF("\r\nSelect thermal regulation threshold value------\r\n");
-			PRINTF("\r\n1. 80°C\r\n");
-			PRINTF("\r\n2. 85°C\r\n");
-			PRINTF("\r\n3. 90°C\r\n");
-			PRINTF("\r\n4. 95°C\r\n");
-			PRINTF("\r\n5. 100°C\r\n");
-			PRINTF("\r\n6. 105°C\r\n");
-			PRINTF("\r\n7. 110°C\r\n");
-			PRINTF("\r\n8. 115°C\r\n");
+			PRINTF("\r\n1. 80 C\r\n");
+			PRINTF("\r\n2. 85 C\r\n");
+			PRINTF("\r\n3. 90 C\r\n");
+			PRINTF("\r\n4. 95 C\r\n");
+			PRINTF("\r\n5. 100 C\r\n");
+			PRINTF("\r\n6. 105 C\r\n");
+			PRINTF("\r\n7. 110 C\r\n");
+			PRINTF("\r\n8. 115 C\r\n");
 
 			do
 			{
@@ -1993,28 +2024,28 @@ static void charging_control()
 			switch(pBuffer)
 			{
 			case kPCA9420_THM_REG_80:
-				PRINTF("\r\nThermal regulation threshold is set to 80°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 80 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_85:
-				PRINTF("\r\nThermal regulation threshold is set to 85°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 85 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_90:
-				PRINTF("\r\nThermal regulation threshold is set to 90°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 90 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_95:
-				PRINTF("\r\nThermal regulation threshold is set to 95°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 95 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_100:
-				PRINTF("\r\nThermal regulation threshold is set to 100°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 100 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_105:
-				PRINTF("\r\nThermal regulation threshold is set to 105°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 105 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_110:
-				PRINTF("\r\nThermal regulation threshold is set to 110°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 110 C.\r\n");
 				break;
 			case kPCA9420_THM_REG_115:
-				PRINTF("\r\nThermal regulation threshold is set to 115°C.\r\n");
+				PRINTF("\r\nThermal regulation threshold is set to 115 C.\r\n");
 				break;
 			default:
 				PRINTF("\r\nError in getting thermal regulation threshold value!!!\r\n");
@@ -2030,6 +2061,7 @@ static void charging_control()
 		}
 	}
 }
+#endif
 
 static int find_operation()
 {
@@ -2458,7 +2490,7 @@ static void regulator_settings(enum _pca9420_mode epca9420_mode)
 
 	do{
 		PRINTF("\r\n********************************\r\n");
-		PRINTF("\r\n1. Enable/Disable Ship Mode\r\n");
+		PRINTF("\r\n1. Enable/Disable Ship Mode(Only for PCA9420UK-EVM)\r\n");
 		PRINTF("\r\n2. Enable/Disable Watchdog Timer\r\n");
 		PRINTF("\r\n3. On Pin Mode Configuration\r\n");
 		PRINTF("\r\n4. Mode Control Selection\r\n");
@@ -2484,6 +2516,7 @@ static void regulator_settings(enum _pca9420_mode epca9420_mode)
 		{
 		case 1: //Ship mode setting
 		{
+#if (!PCA9421UK_EVM_EN)
 			operation = find_operation();
 			if(operation == 1 || operation == 2)
 			{
@@ -2495,7 +2528,9 @@ static void regulator_settings(enum _pca9420_mode epca9420_mode)
 				else if(operation == 2)
 					PRINTF("\r\n\033[33m Ship mode Disabled!!! \033[37m");
 			}
-
+#else
+			PRINTF("\r\n\033[33m PCA9421UK-EVM doesn't support ship mode feature. \033[37m\r\n");
+#endif
 			break;
 		}
 		case 2: //Watchdog timer setting
@@ -2656,7 +2691,6 @@ static void regulator_settings(enum _pca9420_mode epca9420_mode)
 			break;
 		}
 	}while(grp_setting);
-
 }
 
 static void regulator_group_settings()
@@ -2714,11 +2748,17 @@ static void regulator_group_settings()
 static void enable_disable_interrupt()
 {
 	uint16_t character, data, ereg_setting=1, operation, shift, mask;
-	uint8_t e_sysint=1, e_batint=1, e_regint=1;
+	uint8_t e_sysint = 1, e_batint = 1, e_regint = 1, e_vinint = 1;
 
 	do{
 		PRINTF("\r\n 1. System level Interrupt\r\n");
+
+#if (!PCA9421UK_EVM_EN)
 		PRINTF("\r\n 2. Linear battery charger block Interrupt\r\n");
+#else
+		PRINTF("\r\n 2. VIN Interrupt\r\n");
+#endif
+
 		PRINTF("\r\n 3. Voltage regulator block Interrupt\r\n");
 		PRINTF("\r\n 4. Exit\r\n");
 
@@ -2831,6 +2871,7 @@ static void enable_disable_interrupt()
 			break;
 
 		case 2: // Linear battery charger block interrupt
+#if (!PCA9421UK_EVM_EN)
 			while(e_batint)
 			{
 				PCA9420_DRV_Read(&pca9420Driver, PCA9420UK_SUB_INT1_MASK, &data);
@@ -2940,6 +2981,66 @@ static void enable_disable_interrupt()
 					}
 				}
 			}
+#else  //PCA9421UK-EVM
+			while(e_vinint)
+			{
+				PCA9420_DRV_Read(&pca9420Driver, PCA9420UK_SUB_INT1_MASK, &data);
+				PRINTF("\r\n3006: data = %x\r\n",data);
+
+				PRINTF("\r\n************\033[35m VIN INTERRUPT STATE \033[37m************\r\n");
+
+				if((data & PCA9420_VIN_ILIM_MASK) >> PCA9420_VIN_ILIM_SHIFT)
+					PRINTF("\r\n\033[93m Input current limit Interrupt:                 \033[37m Disabled. \r\n");
+				else
+					PRINTF("\r\n\033[93m Input current limit Interrupt:                 \033[37m Enabled. \r\n");
+
+				PRINTF("\r\n\r\n\033[93m *****Select any one to enable/disable particular Interrupt***** \033[37m\r\n");
+				PRINTF("\r\n1. Input current limit interrupt \r\n");
+				PRINTF("\r\n2. Exit\r\n");
+
+				do
+				{
+					PRINTF("\r\nEnter your choice :- ");
+					character = GETCHAR();
+					character -= 48;
+					PRINTF("%d\r\n",character);
+					GETCHAR();
+					if(character < 1 | character > 2)
+						PRINTF("\r\nInvalid Value, Please enter correct value\r\n");
+				}while(character < 1 | character > 2);
+				PRINTF("\r\n*****************************\r\n");
+
+				switch(character)
+				{
+				case 1:
+					shift = PCA9420_VIN_ILIM_SHIFT;
+					break;
+				case 2:
+					e_vinint = 0;
+					break;
+				default:
+					break;
+				}
+
+				if(e_vinint)
+				{
+					operation = find_operation();
+					if(operation == 1)
+					{
+						data = data & ~(1 << shift);
+						PRINTF("\r\ndata = %x\r\n",data);
+						PCA9420_enable_disable_bat_int(&pca9420Driver, data);
+						PRINTF("\r\nInterrupt Enabled!!!\r\n");
+					}
+					else if(operation == 2)
+					{
+						data = data | (1 << shift);
+						PCA9420_enable_disable_bat_int(&pca9420Driver, data);
+						PRINTF("\r\nInterrupt Disabled!!!\r\n");
+					}
+				}
+			}
+#endif
 			break;
 
 		case 3: // Voltage regulator block interrupt
@@ -3035,6 +3136,7 @@ static void enable_disable_interrupt()
 	}while(ereg_setting);
 }
 
+#if (!PCA9421UK_EVM_EN)
 static void charging_status()
 {
 	uint16_t character, data, offset;
@@ -3160,6 +3262,7 @@ static void battery_charging_settings()
 		break;
 	}
 }
+#endif
 
 /*! -----------------------------------------------------------------------
  *  @brief       This is the The main function implementation.
@@ -3194,8 +3297,11 @@ int main(void)
 	BOARD_InitDebugConsole();
 	init_pca9420_wakeup_int();
 
-
-	PRINTF("\r\nISSDK PCA9420UK-EVM PMIC driver example demonstration with comparator mode.\r\n");
+#if (!PCA9421UK_EVM_EN)
+	PRINTF("\r\nISSDK PCA9420UK-EVM PMIC driver example demonstration.\r\n");
+#else
+	PRINTF("\r\nISSDK PCA9421UK-EVM PMIC driver example demonstration.\r\n");
+#endif
 
 	/*! Initialize the I2C driver. */
 	status = I2Cdrv->Initialize(I2C_S_SIGNAL_EVENT);
@@ -3260,7 +3366,11 @@ int main(void)
 			device_settings();
 			break;
 		case 6:
+#if (!PCA9421UK_EVM_EN)
 			battery_charging_settings();
+#else
+			PRINTF("\r\n\033[33m PCA9421UK-EVM doesn't support linear battery charger feature.\033[37m\r\n");
+#endif
 			break;
 		case 7:
 			regulator_group_settings();

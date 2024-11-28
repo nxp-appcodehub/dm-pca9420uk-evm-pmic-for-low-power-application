@@ -16,7 +16,7 @@
 **     Abstract:
 **         CMSIS Peripheral Access Layer for MCXA153
 **
-**     Copyright 1997-2016, 2024 Freescale Semiconductor, Inc.
+**     Copyright 1997-2016 Freescale Semiconductor, Inc.
 **     Copyright 2016-2024 NXP
 **     SPDX-License-Identifier: BSD-3-Clause
 **

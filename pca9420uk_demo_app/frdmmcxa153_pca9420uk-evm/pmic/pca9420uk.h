@@ -11,6 +11,8 @@
 #ifndef PCA9420UK_H_
 #define PCA9420UK_H_
 
+#include "frdm_pca9420uk_shield.h"
+
 /**
  **
  **  @brief The PCA9420UK PMIC Internal Register Map.
@@ -325,6 +327,14 @@ enum
 #define PCA9420_MODE_ON_CFG_SHIFT 	   (0x06)
 #define PCA9420UK_EN_CHG_IN_WTCH_MASK  (0X40)
 #define PCA9420UK_EN_CHG_IN_WTCH_SHIFT (0X02)
+
+#if (PCA9421UK_EVM_EN)
+//PCA9421UK-EVM mask
+#define PCA9421_VIN_INT_MASK    (0x40)
+#define PCA9421_VIN_INT_SHIFT   (0x02)
+#define PCA9421_VIN_AUX_MASK 	(0x20)
+#define PCA9421_VIN_AUX_SHIFT   (0x01)
+#endif
 
 /*! @brief PCA9420 mode definition. */
 enum LongGlitchTimer

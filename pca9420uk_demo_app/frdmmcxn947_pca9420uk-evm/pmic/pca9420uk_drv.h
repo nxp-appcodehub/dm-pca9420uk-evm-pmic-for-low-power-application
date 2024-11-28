@@ -475,6 +475,7 @@ int32_t PCA9420_enable_disable_bat_int(pca9420_i2c_sensorhandle_t *pSensorHandle
  */
 int32_t PCA9420_enable_disable_vol_reg_int(pca9420_i2c_sensorhandle_t *pSensorHandle, uint8_t data);
 
+#if (!PCA9421UK_EVM_EN)
 //Battery charger control APIs
 
 /*! @brief       The interface function to configure charging in case of watchdog timer expire.
@@ -763,5 +764,8 @@ int32_t PCA9420_Set_ntc_beta_val(pca9420_i2c_sensorhandle_t *pSensorHandle, enum
  *  @return      ::PCA9420_Set_thrml_reg_thshld() returns the status.
  */
 int32_t PCA9420_Set_thrml_reg_thshld(pca9420_i2c_sensorhandle_t *pSensorHandle, enum _pca9420_thrml_reg_thshld epca9420_thrml_reg_thshld);
+
+#endif
+
 
 #endif // PCA9420_UK_H_

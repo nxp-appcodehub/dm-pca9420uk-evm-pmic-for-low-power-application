@@ -2,7 +2,7 @@ Hardware requirements
 ===================
 - Mini/micro C USB cable
 - FRDM-MCXN947 board
-- PCA9420UK-EVM board (https://www.nxp.com/part/PCA9420UK-EVM#/)
+- PCA9420/21UK-EVM board (https://www.nxp.com/part/PCA9420UK-EVM#/)
 - 1-cell rechargeable lithium ion battery
 - Personal Computer
 
@@ -19,7 +19,11 @@ Prepare the Demo
 4.  Either press the reset button on your board or launch the debugger in your IDE to begin running the demo.
 
 Running the demo
-NOTE: By default I2C controller operates in Interrupt mode. For I2C controller to operate in EDMA mode, Define
+NOTE1: For building demo application for PCA9421UK-EVM, Enable PCA9421UK_EVM_EN flag in frdm_pca9420uk_shield.h file under board directory.
+PCA9421UK_EVM_EN = 1, for PCA9421UK-EVM shield board
+PCA9421UK_EVM_EN = 0, for PCA9420UK-EVM shield board
+
+NOTE2: By default I2C controller operates in Interrupt mode. For I2C controller to operate in EDMA mode, Define
 #define RTE_I2C2_DMA_EN 1 in RTE_Device.h file under the board directory.
 
 ===============
@@ -28,7 +32,7 @@ When the demo runs successfully, you can see the logs printed on the terminal.
 LOGS:
 ===============
 
-ISSDK PCA9420UK-EVM PMIC driver example demonstration with comparator mode.
+ISSDK PCA9420UK-EVM PMIC driver example demonstration.
 
 ********** MAIN MENU **********
 1. Device Information
